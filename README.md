@@ -114,4 +114,5 @@ Apache License 2.0 是一个宽松的、商业友好的开源软件许可证。�
 
 ## 联系方式
 
-[QQ]http://wpa.qq.com/msgrd?v=3&uin=2692290472&site=qq&menu=yes
+[QQ](http://wpa.qq.com/msgrd?v=3&uin=2692290472&site=qq&menu=yes)
+
