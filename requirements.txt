@@ -1,0 +1,12 @@
+streamlit
+Pillow
+imagehash
+paddlepaddle-gpu==3.0.0b1
+paddleocr
+opencv-python-headless
+numpy
+fuzzywuzzy
+python-Levenshtein
+rich
+tqdm
+pyyaml
