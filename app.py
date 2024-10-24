@@ -87,7 +87,7 @@ def main():
         step = st.radio("选择步骤", ["1. 上传材料", "2. 处理材料", "3. 查看结果"])
 
     # 主界面
-    st.title("成都职业技术学院综测加分材料筛选系统")
+    st.title("综测加分材料筛选系统")
     st.markdown("---")
 
     # 存储当前配置到session state
