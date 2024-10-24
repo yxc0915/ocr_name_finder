@@ -37,8 +37,8 @@
 
 1. 克隆此仓库：
    ```
-   git clone https://github.com/your-username/your-repo-name.git
-   cd your-repo-name
+   git clone https://github.com/yxc0915/ocr_name_finder.git
+   cd ocr_name_finder
    ```
 
 2. 运行安装程序以安装依赖以及必要的模型：
