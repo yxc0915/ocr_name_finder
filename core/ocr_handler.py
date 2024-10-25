@@ -17,12 +17,16 @@ PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODELS_DIR = os.path.join(PROJECT_DIR, 'models')
 CONFIGS_DIR = os.path.join(PROJECT_DIR, 'configs')
 
-# 新模型和配置文件的路径
-DET_MODEL_DIR = os.path.join(MODELS_DIR, 'ch_PP-OCRv4_det_server_infer')
-REC_MODEL_DIR = os.path.join(MODELS_DIR, 'ch_PP-OCRv4_rec_server_infer')
+# 模型和配置文件的路径
+DET_SERVER_MODEL_DIR = os.path.join(MODELS_DIR, 'ch_PP-OCRv4_det_server_infer')
+REC_SERVER_MODEL_DIR = os.path.join(MODELS_DIR, 'ch_PP-OCRv4_rec_server_infer')
+DET_MOBILE_MODEL_DIR = os.path.join(MODELS_DIR, 'ch_PP-OCRv4_det_infer')
+REC_MOBILE_MODEL_DIR = os.path.join(MODELS_DIR, 'ch_PP-OCRv4_rec_infer')
 CLS_MODEL_DIR = os.path.join(MODELS_DIR, 'ch_ppocr_mobile_v2.0_cls_infer')
-DET_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'det_config.yml')
-REC_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'rec_config.yml')
+
+DET_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'det_teacher_config.yml')
+REC_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'rec_hgnet_config.yml')
+CLS_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'cls_config.yml')
 
 # 定义一个命名元组来存储OCR处理结果
 OCRResult = namedtuple('OCRResult', ['processed_images', 'ocr_results'])
@@ -131,19 +135,26 @@ def draw_box_around_text(image, matched_positions, matched_name):
     return image
 
 def process_images(images, user_name, ocr_lang, use_gpu, gpu_id, name_match_threshold,
-                   det_model_dir=DET_MODEL_DIR, rec_model_dir=REC_MODEL_DIR,
                    det_limit_side_len=960, det_limit_type='max',
                    rec_image_shape="3,48,320", rec_batch_num=6,
-                   use_angle_cls=False, cls_model_dir=CLS_MODEL_DIR,
+                   use_angle_cls=True,
                    det_db_thresh=0.3, det_db_box_thresh=0.6, det_db_unclip_ratio=1.5,
                    save_crop_res=False, crop_res_save_dir="./output"):
     
     console.print(f"[cyan]当前工作目录: {os.getcwd()}[/cyan]")
+    
+    # 根据是否使用GPU选择合适的模型
+    if use_gpu:
+        det_model_dir = DET_SERVER_MODEL_DIR
+        rec_model_dir = REC_SERVER_MODEL_DIR
+    else:
+        det_model_dir = DET_MOBILE_MODEL_DIR
+        rec_model_dir = REC_MOBILE_MODEL_DIR
+    
     console.print(f"[cyan]模型路径:[/cyan]")
     console.print(f"[cyan]  检测模型: {det_model_dir}[/cyan]")
     console.print(f"[cyan]  识别模型: {rec_model_dir}[/cyan]")
-    if use_angle_cls:
-        console.print(f"[cyan]  方向分类模型: {cls_model_dir}[/cyan]")
+    console.print(f"[cyan]  方向分类模型: {CLS_MODEL_DIR}[/cyan]")
     
     console.print(f"[cyan]模型参数:[/cyan]")
     console.print(f"[cyan]  检测限制边长: {det_limit_side_len}[/cyan]")
@@ -153,7 +164,8 @@ def process_images(images, user_name, ocr_lang, use_gpu, gpu_id, name_match_thre
 
     det_config = load_yaml(DET_CONFIG_PATH)
     rec_config = load_yaml(REC_CONFIG_PATH)
-    if det_config is None or rec_config is None:
+    cls_config = load_yaml(CLS_CONFIG_PATH)
+    if det_config is None or rec_config is None or cls_config is None:
         return OCRResult([], [])
 
     try:
@@ -164,7 +176,7 @@ def process_images(images, user_name, ocr_lang, use_gpu, gpu_id, name_match_thre
             gpu_mem=500,
             det_model_dir=det_model_dir,
             rec_model_dir=rec_model_dir,
-            cls_model_dir=cls_model_dir if use_angle_cls else None,
+            cls_model_dir=CLS_MODEL_DIR,
             det_limit_side_len=det_limit_side_len,
             det_limit_type=det_limit_type,
             det_db_thresh=det_db_thresh,
