@@ -24,8 +24,10 @@ DET_MOBILE_MODEL_DIR = os.path.join(MODELS_DIR, 'ch_PP-OCRv4_det_infer')
 REC_MOBILE_MODEL_DIR = os.path.join(MODELS_DIR, 'ch_PP-OCRv4_rec_infer')
 CLS_MODEL_DIR = os.path.join(MODELS_DIR, 'ch_ppocr_mobile_v2.0_cls_infer')
 
-DET_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'det_teacher_config.yml')
-REC_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'rec_hgnet_config.yml')
+DET_SERVER_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'det_teacher_config.yml')
+REC_SERVER_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'rec_hgnet_config.yml')
+DET_MOBILE_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'det_cml_config.yml')
+REC_MOBILE_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'rec_distill_config.yml')
 CLS_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'cls_config.yml')
 
 # 定义一个命名元组来存储OCR处理结果
@@ -143,18 +145,27 @@ def process_images(images, user_name, ocr_lang, use_gpu, gpu_id, name_match_thre
     
     console.print(f"[cyan]当前工作目录: {os.getcwd()}[/cyan]")
     
-    # 根据是否使用GPU选择合适的模型
+    # 根据是否使用GPU选择合适的模型和配置文件
     if use_gpu:
         det_model_dir = DET_SERVER_MODEL_DIR
         rec_model_dir = REC_SERVER_MODEL_DIR
+        det_config_path = DET_SERVER_CONFIG_PATH
+        rec_config_path = REC_SERVER_CONFIG_PATH
     else:
         det_model_dir = DET_MOBILE_MODEL_DIR
         rec_model_dir = REC_MOBILE_MODEL_DIR
+        det_config_path = DET_MOBILE_CONFIG_PATH
+        rec_config_path = REC_MOBILE_CONFIG_PATH
     
     console.print(f"[cyan]模型路径:[/cyan]")
     console.print(f"[cyan]  检测模型: {det_model_dir}[/cyan]")
     console.print(f"[cyan]  识别模型: {rec_model_dir}[/cyan]")
     console.print(f"[cyan]  方向分类模型: {CLS_MODEL_DIR}[/cyan]")
+    
+    console.print(f"[cyan]配置文件路径:[/cyan]")
+    console.print(f"[cyan]  检测配置: {det_config_path}[/cyan]")
+    console.print(f"[cyan]  识别配置: {rec_config_path}[/cyan]")
+    console.print(f"[cyan]  方向分类配置: {CLS_CONFIG_PATH}[/cyan]")
     
     console.print(f"[cyan]模型参数:[/cyan]")
     console.print(f"[cyan]  检测限制边长: {det_limit_side_len}[/cyan]")
@@ -162,8 +173,8 @@ def process_images(images, user_name, ocr_lang, use_gpu, gpu_id, name_match_thre
     console.print(f"[cyan]  识别图像形状: {rec_image_shape}[/cyan]")
     console.print(f"[cyan]  识别批次大小: {rec_batch_num}[/cyan]")
 
-    det_config = load_yaml(DET_CONFIG_PATH)
-    rec_config = load_yaml(REC_CONFIG_PATH)
+    det_config = load_yaml(det_config_path)
+    rec_config = load_yaml(rec_config_path)
     cls_config = load_yaml(CLS_CONFIG_PATH)
     if det_config is None or rec_config is None or cls_config is None:
         return OCRResult([], [])
@@ -291,6 +302,3 @@ def process_images(images, user_name, ocr_lang, use_gpu, gpu_id, name_match_thre
     console.print(f"all_ocr_results 长度: {len(all_ocr_results)}")
     
     return OCRResult(processed_images, all_ocr_results)
-
-# 为了向后兼容，保留 fuzzy_name_match 函数名
-fuzzy_name_match = flexible_name_match
