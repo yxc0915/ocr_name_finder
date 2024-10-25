@@ -41,7 +41,7 @@ def load_yaml(yaml_path):
     except Exception as e:
         console.print(f"[red]加载YAML文件 {yaml_path} 时出错: {str(e)}[/red]")
         return None
-
+        
 def flexible_name_match(user_name, ocr_text, threshold=70):
     user_name = user_name.lower()
     ocr_text = ocr_text.lower()
