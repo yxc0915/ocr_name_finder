@@ -23,7 +23,7 @@ CONFIGS = {
     'det_teacher': 'https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/configs/det/ch_PP-OCRv4/ch_PP-OCRv4_det_teacher.yml',
     'rec_hgnet': 'https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/configs/rec/PP-OCRv4/ch_PP-OCRv4_rec_hgnet.yml',
     'det_cml': 'https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/configs/det/ch_PP-OCRv4/ch_PP-OCRv4_det_cml.yml',
-    'rec_distill': 'https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/configs/rec/PP-OCRv4/ch_PP-OCRv4_rec_distill.yml',
+    'rec_distill': 'https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/configs/rec/PP-OCRv4/ch_PP-OCRv4_rec_distillation.yml',
     'cls': 'https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/configs/cls/cls_mv3.yml'
 }
 
