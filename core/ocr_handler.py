@@ -27,7 +27,7 @@ CLS_MODEL_DIR = os.path.join(MODELS_DIR, 'ch_ppocr_mobile_v2.0_cls_infer')
 DET_SERVER_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'det_teacher_config.yml')
 REC_SERVER_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'rec_hgnet_config.yml')
 DET_MOBILE_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'det_cml_config.yml')
-REC_MOBILE_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'rec_distillation_config.yml')
+REC_MOBILE_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'rec_distill_config.yml')
 CLS_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'cls_config.yml')
 
 # 定义一个命名元组来存储OCR处理结果
