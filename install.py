@@ -3,7 +3,7 @@ import subprocess
 import sys
 import urllib.request
 import tarfile
-from tqdm import tqdm
+import time
 
 # 定义项目目录和模型目录
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -31,8 +31,20 @@ def download_file(url, filename):
     """
     下载文件并显示进度条
     """
-    with tqdm(unit='B', unit_scale=True, unit_divisor=1024, miniters=1, desc=filename) as t:
-        urllib.request.urlretrieve(url, filename, reporthook=lambda b, bsize, tsize: t.update(bsize))
+    def reporthook(count, block_size, total_size):
+        global start_time
+        if count == 0:
+            start_time = time.time()
+            return
+        duration = time.time() - start_time
+        progress_size = int(count * block_size)
+        speed = int(progress_size / (1024 * duration))
+        percent = int(count * block_size * 100 / total_size)
+        sys.stdout.write(f"\r...{percent}%, {speed} KB/s, {progress_size / (1024 * 1024):.1f} MB")
+        sys.stdout.flush()
+
+    urllib.request.urlretrieve(url, filename, reporthook)
+    print()  # 打印一个换行，使下一行输出在新行上
 
 def extract_tar(filename, extract_dir):
     """
