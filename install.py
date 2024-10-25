@@ -59,20 +59,42 @@ def install_dependencies():
     """
     subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt'])
 
-def install_paddlepaddle_gpu():
+def has_nvidia_gpu():
     """
-    安装PaddlePaddle GPU版本（CUDA 12.3）
+    检测系统是否有NVIDIA GPU
     """
-    print("正在安装 PaddlePaddle GPU 版本（CUDA 12.3）...")
-    subprocess.check_call([
-        sys.executable, 
-        "-m", 
-        "pip", 
-        "install", 
-        "paddlepaddle-gpu==3.0.0b1", 
-        "-i", 
-        "https://www.paddlepaddle.org.cn/packages/stable/cu123/"
-    ])
+    try:
+        subprocess.check_output('nvidia-smi')
+        return True
+    except:
+        return False
+
+def install_paddlepaddle():
+    """
+    根据系统情况安装PaddlePaddle
+    """
+    if has_nvidia_gpu():
+        print("检测到NVIDIA GPU，正在安装 PaddlePaddle GPU 版本（CUDA 11.8）...")
+        subprocess.check_call([
+            sys.executable, 
+            "-m", 
+            "pip", 
+            "install", 
+            "paddlepaddle-gpu==3.0.0b1", 
+            "-i", 
+            "https://www.paddlepaddle.org.cn/packages/stable/cu118/"
+        ])
+    else:
+        print("未检测到NVIDIA GPU，正在安装 PaddlePaddle CPU 版本...")
+        subprocess.check_call([
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "paddlepaddle==3.0.0b1",
+            "-i",
+            "https://www.paddlepaddle.org.cn/packages/stable/cpu/"
+        ])
 
 def download_models_and_configs():
     """
@@ -98,8 +120,9 @@ if __name__ == '__main__':
     print("正在安装依赖项...")
     install_dependencies()
     
-    print("正在安装 PaddlePaddle GPU 和 PaddleOCR...")
-    install_paddlepaddle_gpu()
+    print("正在安装 PaddlePaddle 和 PaddleOCR...")
+    install_paddlepaddle()
+    install_paddleocr()
     
     print("正在下载模型和配置文件...")
     download_models_and_configs()
