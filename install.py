@@ -36,15 +36,22 @@ def download_file(url, filename):
         if count == 0:
             start_time = time.time()
             return
-        duration = time.time() - start_time
+        duration = max(time.time() - start_time, 0.000001)  # 防止除以零
         progress_size = int(count * block_size)
-        speed = int(progress_size / (1024 * duration))
-        percent = int(count * block_size * 100 / total_size)
-        sys.stdout.write(f"\r...{percent}%, {speed} KB/s, {progress_size / (1024 * 1024):.1f} MB")
-        sys.stdout.flush()
+        try:
+            speed = int(progress_size / (1024 * duration))
+            percent = min(int(count * block_size * 100 / total_size), 100)
+            sys.stdout.write(f"\r...{percent}%, {speed} KB/s, {progress_size / (1024 * 1024):.1f} MB")
+            sys.stdout.flush()
+        except Exception as e:
+            print(f"\nError in reporthook: {e}")
 
-    urllib.request.urlretrieve(url, filename, reporthook)
-    print()  # 打印一个换行，使下一行输出在新行上
+    try:
+        urllib.request.urlretrieve(url, filename, reporthook)
+        print()  # 打印一个换行，使下一行输出在新行上
+    except Exception as e:
+        print(f"\nError downloading {url}: {e}")
+        raise
 
 def extract_tar(filename, extract_dir):
     """
@@ -96,6 +103,13 @@ def install_paddlepaddle():
             "https://www.paddlepaddle.org.cn/packages/stable/cpu/"
         ])
 
+def install_paddleocr():
+    """
+    安装PaddleOCR
+    """
+    print("正在安装 PaddleOCR...")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "paddleocr"])
+
 def download_models_and_configs():
     """
     下载并解压模型文件，下载配置文件
@@ -120,8 +134,11 @@ if __name__ == '__main__':
     print("正在安装依赖项...")
     install_dependencies()
     
-    print("正在安装 PaddlePaddle 和 PaddleOCR...")
+    print("正在安装 PaddlePaddle...")
     install_paddlepaddle()
+    
+    print("正在安装 PaddleOCR...")
+    install_paddleocr()
     
     print("正在下载模型和配置文件...")
     download_models_and_configs()
