@@ -122,7 +122,6 @@ if __name__ == '__main__':
     
     print("正在安装 PaddlePaddle 和 PaddleOCR...")
     install_paddlepaddle()
-    install_paddleocr()
     
     print("正在下载模型和配置文件...")
     download_models_and_configs()
