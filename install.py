@@ -12,14 +12,19 @@ CONFIGS_DIR = os.path.join(PROJECT_DIR, 'configs')
 
 # 定义需要下载的模型文件和配置文件
 MODELS = {
-    'det': 'https://paddleocr.bj.bcebos.com/PP-OCRv4/chinese/ch_PP-OCRv4_det_server_infer.tar',
-    'rec': 'https://paddleocr.bj.bcebos.com/PP-OCRv4/chinese/ch_PP-OCRv4_rec_server_infer.tar',
-    'cls': 'https://paddleocr.bj.bcebos.com/dygraph_v2.0/ch/ch_ppocr_mobile_v2.0_cls_infer.tar'
+    'det_server': 'https://paddleocr.bj.bcebos.com/PP-OCRv4/chinese/ch_PP-OCRv4_det_server_infer.tar',
+    'rec_server': 'https://paddleocr.bj.bcebos.com/PP-OCRv4/chinese/ch_PP-OCRv4_rec_server_infer.tar',
+    'cls': 'https://paddleocr.bj.bcebos.com/dygraph_v2.0/ch/ch_ppocr_mobile_v2.0_cls_infer.tar',
+    'det': 'https://paddleocr.bj.bcebos.com/PP-OCRv4/chinese/ch_PP-OCRv4_det_infer.tar',
+    'rec': 'https://paddleocr.bj.bcebos.com/PP-OCRv4/chinese/ch_PP-OCRv4_rec_infer.tar'
 }
 
 CONFIGS = {
-    'det': 'https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/configs/det/ch_PP-OCRv4/ch_PP-OCRv4_det_teacher.yml',
-    'rec': 'https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/configs/rec/PP-OCRv4/ch_PP-OCRv4_rec_hgnet.yml'
+    'det_teacher': 'https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/configs/det/ch_PP-OCRv4/ch_PP-OCRv4_det_teacher.yml',
+    'rec_hgnet': 'https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/configs/rec/PP-OCRv4/ch_PP-OCRv4_rec_hgnet.yml',
+    'det_cml': 'https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/configs/det/ch_PP-OCRv4/ch_PP-OCRv4_det_cml.yml',
+    'rec_distill': 'https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/configs/rec/PP-OCRv4/ch_PP-OCRv4_rec_distill.yml',
+    'cls': 'https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/configs/cls/cls_mv3.yml'
 }
 
 def download_file(url, filename):
