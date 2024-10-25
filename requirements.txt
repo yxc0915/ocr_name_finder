@@ -8,5 +8,4 @@ numpy
 fuzzywuzzy
 python-Levenshtein
 rich
-tqdm
 pyyaml
