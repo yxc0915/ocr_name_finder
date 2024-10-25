@@ -74,7 +74,7 @@ def install_paddlepaddle():
     根据系统情况安装PaddlePaddle
     """
     if has_nvidia_gpu():
-        print("检测到NVIDIA GPU，正在安装 PaddlePaddle GPU 版本（CUDA 11.8）...")
+        print("检测到NVIDIA GPU，正在安装 PaddlePaddle GPU 版本（CUDA 12.3）...")
         subprocess.check_call([
             sys.executable, 
             "-m", 
@@ -82,7 +82,7 @@ def install_paddlepaddle():
             "install", 
             "paddlepaddle-gpu==3.0.0b1", 
             "-i", 
-            "https://www.paddlepaddle.org.cn/packages/stable/cu118/"
+            "https://www.paddlepaddle.org.cn/packages/stable/cu123/"
         ])
     else:
         print("未检测到NVIDIA GPU，正在安装 PaddlePaddle CPU 版本...")
