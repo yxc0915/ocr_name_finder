@@ -201,6 +201,10 @@ def process_images(images, user_name, ocr_lang, use_gpu, gpu_id, name_match_thre
     all_ocr_results = []
     individual_ocr_results = []
 
+    # 创建保存OCR结果的目录
+    output_dir = os.path.join(os.getcwd(), 'ocr_results')
+    os.makedirs(output_dir, exist_ok=True)
+
     with Progress() as progress:
         task = progress.add_task("[cyan]OCR处理中...[/cyan]", total=len(images))
 
@@ -263,6 +267,13 @@ def process_images(images, user_name, ocr_lang, use_gpu, gpu_id, name_match_thre
                     'full_text': full_text
                 }
                 individual_ocr_results.append(individual_result)
+
+                # 为每张图片保存单独的OCR结果
+                image_ocr_file = os.path.join(output_dir, f'ocr_result_image_{idx}.json')
+                with open(image_ocr_file, 'w', encoding='utf-8') as f:
+                    json.dump(individual_result, f, ensure_ascii=False, indent=2)
+                
+                console.print(f"[green]图片 {idx} 的OCR结果已保存到: {image_ocr_file}[/green]")
                 
                 console.print(f"[blue]图片 {idx+1} OCR 结果:[/blue]")
                 console.print(f"  提取的文本: {full_text}")
@@ -292,12 +303,20 @@ def process_images(images, user_name, ocr_lang, use_gpu, gpu_id, name_match_thre
                 console.print(f"[red]图片 {idx+1} OCR处理时出错: {str(e)}[/red]")
                 console.print(f"[red]错误详情：\n{traceback.format_exc()}[/red]")
                 processed_images.append((img, False, []))
-                individual_ocr_results.append({
+                error_result = {
                     'image_index': idx,
                     'ocr_result': [],
                     'full_text': '',
                     'error': str(e)
-                })
+                }
+                individual_ocr_results.append(error_result)
+                
+                # 保存错误信息
+                error_file = os.path.join(output_dir, f'ocr_error_image_{idx}.json')
+                with open(error_file, 'w', encoding='utf-8') as f:
+                    json.dump(error_result, f, ensure_ascii=False, indent=2)
+                
+                console.print(f"[yellow]图片 {idx} 的错误信息已保存到: {error_file}[/yellow]")
 
             progress.update(task, advance=1)
 
@@ -311,13 +330,11 @@ def process_images(images, user_name, ocr_lang, use_gpu, gpu_id, name_match_thre
     console.print(f"individual_ocr_results 类型: {type(individual_ocr_results)}")
     console.print(f"individual_ocr_results 长度: {len(individual_ocr_results)}")
     
-    # 保存每张图片的OCR结果到JSON文件
-    output_dir = os.path.join(os.getcwd(), 'ocr_results')
-    os.makedirs(output_dir, exist_ok=True)
-    output_file = os.path.join(output_dir, 'individual_ocr_results.json')
-    with open(output_file, 'w', encoding='utf-8') as f:
+    # 保存所有图片OCR结果的汇总文件
+    all_results_file = os.path.join(output_dir, 'all_ocr_results.json')
+    with open(all_results_file, 'w', encoding='utf-8') as f:
         json.dump(individual_ocr_results, f, ensure_ascii=False, indent=2)
     
-    console.print(f"[green]每张图片的OCR结果已保存到: {output_file}[/green]")
+    console.print(f"[green]所有图片的OCR结果汇总已保存到: {all_results_file}[/green]")
     
     return OCRResult(processed_images, all_ocr_results, individual_ocr_results)
