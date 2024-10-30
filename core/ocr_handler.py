@@ -1,4 +1,5 @@
 import os
+import json
 from paddleocr import PaddleOCR
 from PIL import Image, ImageDraw
 import numpy as np
@@ -31,7 +32,7 @@ REC_MOBILE_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'rec_distill_config.yml')
 CLS_CONFIG_PATH = os.path.join(CONFIGS_DIR, 'cls_config.yml')
 
 # 定义一个命名元组来存储OCR处理结果
-OCRResult = namedtuple('OCRResult', ['processed_images', 'ocr_results'])
+OCRResult = namedtuple('OCRResult', ['processed_images', 'ocr_results', 'individual_ocr_results'])
 
 def load_yaml(yaml_path):
     try:
@@ -90,20 +91,15 @@ def draw_box_around_text(image, matched_positions, matched_name):
     for item in matched_positions:
         box = item['position']
         if isinstance(box, list) and len(box) == 4 and all(isinstance(point, list) and len(point) == 2 for point in box):
-            # 计算边框的宽度和高度
             width = max(point[0] for point in box) - min(point[0] for point in box)
             height = max(point[1] for point in box) - min(point[1] for point in box)
-            
-            # 计算边框的中心点
             center_x = sum(point[0] for point in box) / 4
             center_y = sum(point[1] for point in box) / 4
             
-            # 根据文本大小调整边框大小
-            scale_factor = max(width, height) / 100  # 可以调整这个值来改变缩放比例
-            padding_x = max(10, int(20 * scale_factor))  # 最小10像素，最大根据文本大小调整
-            padding_y = max(5, int(10 * scale_factor))   # 最小5像素，最大根据文本大小调整
+            scale_factor = max(width, height) / 100
+            padding_x = max(10, int(20 * scale_factor))
+            padding_y = max(5, int(10 * scale_factor))
             
-            # 计算新的边框坐标
             new_box = [
                 [center_x - width/2 - padding_x, center_y - height/2 - padding_y],
                 [center_x + width/2 + padding_x, center_y - height/2 - padding_y],
@@ -111,10 +107,8 @@ def draw_box_around_text(image, matched_positions, matched_name):
                 [center_x - width/2 - padding_x, center_y + height/2 + padding_y]
             ]
             
-            # 绘制新的边框
             draw.polygon([coord for point in new_box for coord in point], outline=(255, 0, 0), width=max(2, int(scale_factor * 2)))
         elif isinstance(box, list) and len(box) == 8:
-            # 如果是8个坐标点的情况，也可以类似处理
             width = max(box[0::2]) - min(box[0::2])
             height = max(box[1::2]) - min(box[1::2])
             center_x = sum(box[0::2]) / 4
@@ -145,7 +139,6 @@ def process_images(images, user_name, ocr_lang, use_gpu, gpu_id, name_match_thre
     
     console.print(f"[cyan]当前工作目录: {os.getcwd()}[/cyan]")
     
-    # 根据是否使用GPU选择合适的模型和配置文件
     if use_gpu:
         det_model_dir = DET_SERVER_MODEL_DIR
         rec_model_dir = REC_SERVER_MODEL_DIR
@@ -177,7 +170,7 @@ def process_images(images, user_name, ocr_lang, use_gpu, gpu_id, name_match_thre
     rec_config = load_yaml(rec_config_path)
     cls_config = load_yaml(CLS_CONFIG_PATH)
     if det_config is None or rec_config is None or cls_config is None:
-        return OCRResult([], [])
+        return OCRResult([], [], [])
 
     try:
         ocr = PaddleOCR(
@@ -202,10 +195,11 @@ def process_images(images, user_name, ocr_lang, use_gpu, gpu_id, name_match_thre
     except Exception as e:
         console.print(f"[red]错误：初始化PaddleOCR时出错。{str(e)}[/red]")
         console.print(f"[red]错误详情：\n{traceback.format_exc()}[/red]")
-        return OCRResult([], [])
+        return OCRResult([], [], [])
 
     processed_images = []
     all_ocr_results = []
+    individual_ocr_results = []
 
     with Progress() as progress:
         task = progress.add_task("[cyan]OCR处理中...[/cyan]", total=len(images))
@@ -262,6 +256,14 @@ def process_images(images, user_name, ocr_lang, use_gpu, gpu_id, name_match_thre
                     console.print(f"  置信度: {item['confidence']}")
 
                 all_ocr_results.append(text_with_positions)
+                
+                individual_result = {
+                    'image_index': idx,
+                    'ocr_result': text_with_positions,
+                    'full_text': full_text
+                }
+                individual_ocr_results.append(individual_result)
+                
                 console.print(f"[blue]图片 {idx+1} OCR 结果:[/blue]")
                 console.print(f"  提取的文本: {full_text}")
 
@@ -290,6 +292,12 @@ def process_images(images, user_name, ocr_lang, use_gpu, gpu_id, name_match_thre
                 console.print(f"[red]图片 {idx+1} OCR处理时出错: {str(e)}[/red]")
                 console.print(f"[red]错误详情：\n{traceback.format_exc()}[/red]")
                 processed_images.append((img, False, []))
+                individual_ocr_results.append({
+                    'image_index': idx,
+                    'ocr_result': [],
+                    'full_text': '',
+                    'error': str(e)
+                })
 
             progress.update(task, advance=1)
 
@@ -300,5 +308,16 @@ def process_images(images, user_name, ocr_lang, use_gpu, gpu_id, name_match_thre
     console.print(f"processed_images 长度: {len(processed_images)}")
     console.print(f"all_ocr_results 类型: {type(all_ocr_results)}")
     console.print(f"all_ocr_results 长度: {len(all_ocr_results)}")
+    console.print(f"individual_ocr_results 类型: {type(individual_ocr_results)}")
+    console.print(f"individual_ocr_results 长度: {len(individual_ocr_results)}")
     
-    return OCRResult(processed_images, all_ocr_results)
+    # 保存每张图片的OCR结果到JSON文件
+    output_dir = os.path.join(os.getcwd(), 'ocr_results')
+    os.makedirs(output_dir, exist_ok=True)
+    output_file = os.path.join(output_dir, 'individual_ocr_results.json')
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(individual_ocr_results, f, ensure_ascii=False, indent=2)
+    
+    console.print(f"[green]每张图片的OCR结果已保存到: {output_file}[/green]")
+    
+    return OCRResult(processed_images, all_ocr_results, individual_ocr_results)
